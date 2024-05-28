@@ -11,7 +11,8 @@ pymysql = "*"
 passlib = "*"
 bcrypt = "*"
 python-multipart = "*"
-python-jose = {extras = ["cryptography"], version = "*"}
+python-jose = {extras = ["cryptography"] }
+psycopg2-binary = "*"
 
 [dev-packages]
 
