@@ -11,6 +11,7 @@ pymysql = "*"
 passlib = "*"
 bcrypt = "*"
 python-multipart = "*"
+python-jose = {extras = ["cryptography"], version = "*"}
 
 [dev-packages]
 
