@@ -8,6 +8,8 @@ uvicorn = "*"
 fastapi = "*"
 sqlalchemy = "*"
 pymysql = "*"
+passlib = "*"
+bcrypt = "*"
 
 [dev-packages]
 
