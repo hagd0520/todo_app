@@ -95,10 +95,19 @@ async def update_todo(
     
     
 @router.delete("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
-async def delete_todo(db: db_dependency, todo_id: int = Path(gt=0)):
-    todo_model = db.query(Todos).filter(Todos.id == todo_id).first()
+async def delete_todo(
+    user: user_dependency,
+    db: db_dependency, 
+    todo_id: int = Path(gt=0)
+):
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
+    todo_model = db.query(Todos).filter(Todos.id == todo_id) \
+        .filter(Todos.owner_id == user["id"]).first()
     if not todo_model:
         raise HTTPException(status_code=404, detail="Todo not found.")
-    db.query(Todos).filter(Todos.id == todo_id).delete()
+    # db.query(Todos).filter(Todos.id == todo_id) \
+    #     .filter(Todos.owner_id == user["id"]).delete()
+    db.delete(todo_model)
     
     db.commit()
