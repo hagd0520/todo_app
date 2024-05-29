@@ -1,14 +1,21 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Path
+from fastapi import APIRouter, Depends, HTTPException, Path, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from starlette import status
+from starlette.templating import Jinja2Templates
 from models import Todos
 from database import Base, SessionLocal, engine
 from routers.auth import get_current_user
 
 
-router = APIRouter()
+router = APIRouter(
+    prefix="/todo",
+    tags=["todos"]
+)
+
+
+templates = Jinja2Templates(directory="templates")
 
 
 def get_db():
@@ -29,16 +36,20 @@ class TodoRequest(BaseModel):
     priority: int = Field(gt=0, lt=6)
     complete: bool
     
-    
+
+@router.get("/test")
+async def test(request: Request):
+    return templates.TemplateResponse("add-todo.html", {"request": request})
+
         
-@router.get("/", status_code=status.HTTP_200_OK)
+@router.get("", status_code=status.HTTP_200_OK)
 async def read_all(user: user_dependency, db: db_dependency):
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authentication Failed")
     return db.query(Todos).filter(Todos.owner_id == user["id"]).all()
 
 
-@router.get("/todo/{todo_id}", status_code=status.HTTP_200_OK)
+@router.get("/{todo_id}", status_code=status.HTTP_200_OK)
 async def read_todo(
     user: user_dependency,
     db: db_dependency, 
@@ -54,7 +65,7 @@ async def read_todo(
     raise HTTPException(status_code=404, detail="Todo not found.")
 
 
-@router.post("/todo", status_code=status.HTTP_201_CREATED)
+@router.post("", status_code=status.HTTP_201_CREATED)
 async def create_todo(
     user: user_dependency,
     db: db_dependency, 
@@ -69,7 +80,7 @@ async def create_todo(
     db.commit()
     
     
-@router.put("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.put("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def update_todo(
     user: user_dependency,
     db: db_dependency, 
@@ -94,7 +105,7 @@ async def update_todo(
     db.commit()
     
     
-@router.delete("/todo/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{todo_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_todo(
     user: user_dependency,
     db: db_dependency, 
