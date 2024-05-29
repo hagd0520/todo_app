@@ -13,6 +13,7 @@ bcrypt = "*"
 python-multipart = "*"
 python-jose = {extras = ["cryptography"] }
 psycopg2-binary = "*"
+alembic = "*"
 
 [dev-packages]
 
