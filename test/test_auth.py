@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from fastapi import HTTPException
 from jose import jwt
 from test.utils import *
 from routers.auth import ALGORITHM, SECRET_KEY, create_access_token, get_db, authenticate_user, get_current_user
@@ -45,3 +46,15 @@ async def test_get_current_user_valid_token():
     
     user = await get_current_user(token=token)
     assert user == {"username": "admin", "id": 1, "user_role": "admin"}
+    
+    
+@pytest.mark.asyncio
+async def test_get_current_user_missing_payload():
+    encode = {"role": "user"}
+    token = jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+    
+    with pytest.raises(HTTPException) as excinfo:
+        await get_current_user(token=token)
+        
+    assert excinfo.value.status_code == 401
+    assert excinfo.value.detail == "Could not validate user."
