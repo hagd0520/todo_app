@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from jose import jwt
 from test.utils import *
-from routers.auth import ALGORITHM, SECRET_KEY, create_access_token, get_db, authenticate_user
+from routers.auth import ALGORITHM, SECRET_KEY, create_access_token, get_db, authenticate_user, get_current_user
 
 
 app.dependency_overrides[get_db] = override_get_db
@@ -35,3 +35,13 @@ def test_create_access_token():
     assert decoded_token["sub"] == username
     assert decoded_token["id"] == user_id
     assert decoded_token["role"] == role
+    
+    
+@pytest.mark.asyncio    
+async def test_get_current_user_valid_token():
+    
+    encode = {"sub": "admin", "id": 1, "role": "admin"}
+    token = jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
+    
+    user = await get_current_user(token=token)
+    assert user == {"username": "admin", "id": 1, "user_role": "admin"}

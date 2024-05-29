@@ -15,6 +15,7 @@ python-jose = {extras = ["cryptography"] }
 psycopg2-binary = "*"
 alembic = "*"
 pytest = "*"
+pytest-asyncio = "*"
 
 [dev-packages]
 
