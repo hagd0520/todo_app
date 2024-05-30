@@ -1,9 +1,9 @@
 from typing import Annotated
-from fastapi import APIRouter, Depends, HTTPException, Path, Request
+from fastapi import APIRouter, Depends, Form, HTTPException, Path, Request
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from starlette import status
-from starlette.responses import HTMLResponse
+from starlette.responses import HTMLResponse, RedirectResponse
 from starlette.templating import Jinja2Templates
 from models import Todos
 from database import Base, SessionLocal, engine
@@ -42,6 +42,26 @@ async def read_all_by_user(request: Request, db: db_dependency):
 @router.get("/add-todo", response_class=HTMLResponse)
 async def add_new_todo(request: Request):
     return templates.TemplateResponse("add-todo.html", {"request": request})
+
+
+@router.post("/add-todo", response_class=HTMLResponse)
+async def create_todo(
+    request: Request,
+    db: db_dependency, 
+    title: str = Form(...), 
+    description: str = Form(...),
+    priority: int = Form(...),
+):
+    todo_model = Todos()
+    todo_model.title = title
+    todo_model.description = description
+    todo_model.priority = priority
+    todo_model.complete = False
+    todo_model.owner_id = 1
+    db.add(todo_model)
+    db.commit()
+    
+    return RedirectResponse(url="/todos", status_code=status.HTTP_302_FOUND)
 
 
 @router.get("/edit-todo/{todo_id}", response_class=HTMLResponse)
