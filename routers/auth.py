@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta
 from typing import Annotated, Optional
-from fastapi import APIRouter, Depends, HTTPException, Request, Response
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -178,3 +178,38 @@ async def authentication_page(request: Request):
 @router.get("/register", response_class=HTMLResponse)
 async def register(request: Request):
     return templates.TemplateResponse("register.html", {"request": request})
+
+
+@router.post("/register", response_class=HTMLResponse)
+async def register_user(
+    request: Request, 
+    db: db_dependency,
+    email: str = Form(...), 
+    username: str = Form(...),
+    firstname: str = Form(...),
+    lastname: str = Form(...),
+    password: str = Form(...),
+    password2: str = Form(...)
+):
+    validation1 = db.query(Users).where(Users.username == username).first()
+    
+    validation2 = db.query(Users).where(Users.email == email).first()
+    
+    if password != password2 or validation1 or validation2:
+        msg = "Invalid registration request"
+        return templates.TemplateResponse("register.html", {"request": request, "msg": msg})
+    
+    user_model = Users()
+    user_model.username = username
+    user_model.email = email
+    user_model.first_name = firstname
+    user_model.last_name = lastname
+    
+    hashed_password = bcrypt_context.hash(password)
+    user_model.hashed_password = hashed_password
+    
+    db.add(user_model)
+    db.commit()
+    
+    msg = "User successfully created"
+    return templates.TemplateResponse("login.html", {"request": request, "msg": msg})
