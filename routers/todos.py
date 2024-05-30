@@ -92,6 +92,21 @@ async def edit_todo_commit(
     
     return RedirectResponse(url="/todos", status_code=status.HTTP_302_FOUND)
 
+
+@router.get("/delete/{todo_id}")
+async def delete_todo(request: Request, db: db_dependency, todo_id: int):
+    
+    todo_model = db.query(Todos).filter(Todos.id == todo_id, Todos.owner_id == 1).first()
+    
+    if not todo_model:
+        return RedirectResponse(url="/todos", status_code=status.HTTP_302_FOUND)
+    
+    db.delete(todo_model)
+    
+    db.commit()
+    
+    return RedirectResponse(url="/todos", status_code=status.HTTP_302_FOUND)
+
     
 # class TodoRequest(BaseModel):
 #     title: str = Field(min_length=3)
