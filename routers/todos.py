@@ -34,7 +34,7 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
 @router.get("", response_class=HTMLResponse)
 async def read_all_by_user(request: Request, db: db_dependency):
     
-    todos = db.query(Todos).filter(Todos.owner_id == 1).all()
+    todos = db.query(Todos).filter(Todos.owner_id == 1).order_by(Todos.id).all()
     
     return templates.TemplateResponse("home.html", {"request": request, "todos": todos})
 
@@ -103,6 +103,19 @@ async def delete_todo(request: Request, db: db_dependency, todo_id: int):
     
     db.delete(todo_model)
     
+    db.commit()
+    
+    return RedirectResponse(url="/todos", status_code=status.HTTP_302_FOUND)
+
+
+@router.get("/complete/{todo_id}", response_class=HTMLResponse)
+async def complete_todo(request: Request, db: db_dependency, todo_id: int):
+    
+    todo = db.query(Todos).filter(Todos.id == todo_id).first()
+    
+    todo.complete = not todo.complete
+    
+    db.add(todo)
     db.commit()
     
     return RedirectResponse(url="/todos", status_code=status.HTTP_302_FOUND)
