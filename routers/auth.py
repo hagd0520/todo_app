@@ -145,6 +145,13 @@ async def login(request: Request, db: db_dependency):
         msg = "Unknown Error"
         return templates.TemplateResponse("login.html", {"request": request, "msg": msg})
     
+    
+@router.get("/logout")
+async def logout(request: Request):
+    msg = "Logout Successful"
+    response = templates.TemplateResponse("login.html", {"request": request, "msg": msg})
+    response.delete_cookie(key="access_token")
+    return response
 
 
 @router.post("/token", response_model=Token)
