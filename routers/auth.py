@@ -29,14 +29,14 @@ oauth2_bearer = OAuth2PasswordBearer(tokenUrl="auth/token")
 templates = Jinja2Templates(directory="templates")
 
 
-class CreateUserRequest(BaseModel):
-    username: str
-    email: str
-    first_name: str
-    last_name: str
-    password: str
-    role: str
-    phone_number: str
+# class CreateUserRequest(BaseModel):
+#     username: str
+#     email: str
+#     first_name: str
+#     last_name: str
+#     password: str
+#     role: str
+#     phone_number: str
     
     
 class Token(BaseModel):
@@ -93,7 +93,7 @@ async def get_current_user(request: Request):
         user_id: int = payload.get("id")
         user_role: str = payload.get("role")
         if not username or not user_id:
-            return None
+            logout(request)
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate user."
@@ -106,26 +106,26 @@ async def get_current_user(request: Request):
         )
 
 
-@router.post("", status_code=status.HTTP_201_CREATED)
-async def create_user(
-    db: db_dependency,
-    create_user_request: CreateUserRequest
-):
-    create_user_model = Users(
-        email=create_user_request.email,
-        username=create_user_request.username,
-        first_name=create_user_request.first_name,
-        last_name=create_user_request.last_name,
-        role=create_user_request.role,
-        hashed_password=bcrypt_context.hash(create_user_request.password),
-        is_active=True,
-        phone_number=create_user_request.phone_number
-    )
+# @router.post("", status_code=status.HTTP_201_CREATED)
+# async def create_user(
+#     db: db_dependency,
+#     create_user_request: CreateUserRequest
+# ):
+#     create_user_model = Users(
+#         email=create_user_request.email,
+#         username=create_user_request.username,
+#         first_name=create_user_request.first_name,
+#         last_name=create_user_request.last_name,
+#         role=create_user_request.role,
+#         hashed_password=bcrypt_context.hash(create_user_request.password),
+#         is_active=True,
+#         phone_number=create_user_request.phone_number
+#     )
     
-    db.add(create_user_model)
-    db.commit()
-    db.refresh(create_user_model)
-    return {"user": create_user_model}
+#     db.add(create_user_model)
+#     db.commit()
+#     db.refresh(create_user_model)
+#     return {"user": create_user_model}
 
 
 @router.post("/", response_class=HTMLResponse)
@@ -147,8 +147,9 @@ async def login(request: Request, db: db_dependency):
     
     
 @router.get("/logout")
-async def logout(request: Request):
-    msg = "Logout Successful"
+async def logout(request: Request, msg: Optional[str] = None):
+    if not msg:
+        msg = "Logout Successful"
     response = templates.TemplateResponse("login.html", {"request": request, "msg": msg})
     response.delete_cookie(key="access_token")
     return response
