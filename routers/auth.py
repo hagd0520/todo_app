@@ -83,13 +83,17 @@ def create_access_token(username: str, user_id: int, role: str, expires_delta: t
     return jwt.encode(encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
-async def get_current_user(token: Annotated[str, Depends(oauth2_bearer)]):
+async def get_current_user(request: Request):
     try:
+        token = request.cookies.get("access_token")
+        if not token:
+            return None
         payload = jwt.decode(token, SECRET_KEY, algorithms=ALGORITHM)
         username: str = payload.get("sub")
         user_id: int = payload.get("id")
         user_role: str = payload.get("role")
         if not username or not user_id:
+            return None
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Could not validate user."
