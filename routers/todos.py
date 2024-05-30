@@ -32,8 +32,11 @@ user_dependency = Annotated[dict, Depends(get_current_user)]
     
     
 @router.get("", response_class=HTMLResponse)
-async def read_all_by_user(request: Request):
-    return templates.TemplateResponse("home.html", {"request": request})
+async def read_all_by_user(request: Request, db: db_dependency):
+    
+    todos = db.query(Todos).filter(Todos.owner_id == 1).all()
+    
+    return templates.TemplateResponse("home.html", {"request": request, "todos": todos})
 
 
 @router.get("/add-todo", response_class=HTMLResponse)
