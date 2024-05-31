@@ -1,3 +1,4 @@
+import sys
 from fastapi import FastAPI
 from starlette import status
 from starlette.responses import RedirectResponse
@@ -28,3 +29,7 @@ app.include_router(auth.router)
 app.include_router(todos.router)
 app.include_router(admin.router)
 app.include_router(users.router)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", reload=True)
